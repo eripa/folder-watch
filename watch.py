@@ -2,9 +2,18 @@
 #
 
 import os
-import pickledb
+import datastore
+from datastore.impl.filesystem import FileSystemDatastore
 import sys
 import datetime
+
+
+#import pickle
+
+# pickle.dump(itemlist, outfile)
+# To read it back:
+
+# itemlist = pickle.load(infile)
 
 # some global settings
 monitor_path = os.path.join(os.getenv('HOME'), 'Pictures', 'iPhoto Library', 'Masters')
@@ -13,35 +22,37 @@ history_to_keep = 10
 def checkInput(dir):
 	if not os.path.isdir(monitor_path): raise IOError('Directory '+ dir +' does not seem to exist')
 
-def initializeDB(db, date):
-	if not db.get(0):
-		db.set(0, "Database created "+ date.strftime("%Y%m%d-%H%M"))
+def initializeDS(ds, date):
+	initkey = datastore.Key(0)
+	if not ds.contains(initkey):
+		ds.put(initkey, "Database created "+ date.strftime("%Y%m%d-%H%M"))
+		print ds.get(initkey)
 		return True
 	else:
 		return True
 
-def getNextIndex(db):
-	index = 0
-	while db.get(index):
-		index += 1
-	return index
+def getNextIndex(ds):
+	i = 0
+	next_key = datastore.Key(i)
+	while ds.contains(next_key):
+		i += 1
+		next_key = datastore.Key(i)
+	last_key = datastore.Key(i - 1)
+	return last_key, next_key
 
 def main():
 	try:
 		checkInput(monitor_path)
 
 		date = datetime.datetime.now()
-		db = pickledb.load('files.db', True)
-
-		print db.get(0)
+		ds = FileSystemDatastore('datastore')
 		
-		initializeDB(db, date)
-		free_index = getNextIndex(db)
-		print "Setting index %s" % (free_index)
-		db.set(free_index, "bla bla")
-		#db.lcreate()
+		initializeDS(ds, date)
+		last_key, next_key = getNextIndex(ds)
+		print "Last written: %s" % (last_key)
+		print "Setting index %s" % (next_key)
+		ds.put(next_key, ['bla', 'bla2', 'bla3'])
 
-		db.dump()
 	except IOError as e:
 		sys.exit(e.message)
 	except KeyboardInterrupt:
