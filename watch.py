@@ -34,8 +34,11 @@ def sendGmail(from_address, to_address, subject, message):
 		#server.quit()
 		server.close()
 		print 'successfully sent the mail'
+	except smtplib.SMTPAuthenticationError:
+		server.close()
+		raise
 	except:
-		print "failed to send mail"
+		raise
 
 def checkInput(dir):
 	if not os.path.isdir(dir): raise IOError('Directory '+ dir +' does not seem to exist')
@@ -89,12 +92,13 @@ def main():
 		else:
 			print 'Only new files or same amount, nothing to do.'
 		writeDataToDisk(datafile, newdata)
-
 	except IOError as e:
 		err_str = "I/O error({0}): %s: {1}".format(e.errno, e.strerror) % (e.filename)
 		sys.exit(err_str)
 	except KeyboardInterrupt:
 		print 'Aborting..'
+	except smtplib.SMTPAuthenticationError as e:
+		sys.exit(e.smtp_error)
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
 		raise
