@@ -10,7 +10,7 @@ import datetime
 #monitor_path = os.path.join(os.getenv('HOME'), 'Pictures', 'Aperture Library.aplibrary', 'Masters')
 
 from_address = 'you@foo.bar'
-from_address = 'you@foo.bar'
+to_address = 'you@foo.bar'
 gmail_user = "you@foo.bar"
 gmail_pwd = "fooBar1234"
 
@@ -88,7 +88,7 @@ def main():
 			subject = 'Removed files from %s' % (folder)
 			message = generateMessage(difference, stored_data['run'])
 			print message
-			sendGmail(from_address, from_address, subject, message)
+			sendGmail(from_address, to_address, subject, message)
 		else:
 			print 'Only new files or same amount, nothing to do.'
 		writeDataToDisk(datafile, newdata)
