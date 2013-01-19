@@ -74,8 +74,8 @@ def generateMessage(data, runtime):
 	return msg
 
 def main():
-	folder = sys.argv[1]
 	try:
+		folder = sys.argv[1]
 		checkInput(folder)
 		datafile = os.path.join(os.path.dirname(sys.argv[0]), 'data.db')
 		stored_data = getDataFromDisk(datafile)
@@ -92,6 +92,8 @@ def main():
 		else:
 			print 'Only new files or same amount, nothing to do.'
 		writeDataToDisk(datafile, newdata)
+	except IndexError as e:
+		sys.exit('Error %s: Did you provide a folder to watch?' % (e.message))
 	except IOError as e:
 		err_str = "I/O error({0}): %s: {1}".format(e.errno, e.strerror) % (e.filename)
 		sys.exit(err_str)
