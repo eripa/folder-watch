@@ -60,12 +60,16 @@ def writeDataToDisk(pickle_file, data):
 def scanPath(dir):
 	ret = []
 	for path, dirs, files in os.walk(dir):
-		ret += files
+		for file in files:
+			ret.append(os.path.join(path, file))
 	return sorted(ret)
 
 def compareData(stored_data, data):
 	return list(set(stored_data[1:]).symmetric_difference(data[1:]))
 	return [(i,j) for i,j in zip(stored_data,data) if i!=j]
+	
+def checkForMissingEntries(stored_data, data):
+	return [item for item in stored_data if item not in data]
 
 def generateMessage(data, runtime):
 	msg = 'The following files have been removed since last run (%s):\n' % (runtime)
@@ -81,12 +85,13 @@ def main():
 		stored_data = getDataFromDisk(datafile)
 		newdata = scanPath(folder)
 		difference = compareData(stored_data['data'], newdata)
+		missing_files = checkForMissingEntries(stored_data['data'], newdata)
 		print 'amount of files last run (%s): %s' % (stored_data['run'], len(stored_data['data']))
 		print 'amount of files this run: %s' % (len(newdata))
-		print 'difference: %s' % (len(difference))
-		if len(stored_data['data']) > len(newdata):
+		print 'differences: %s' % (len(difference))
+		if len(missing_files) > 0:
 			subject = 'Removed files from %s' % (folder)
-			message = generateMessage(difference, stored_data['run'])
+			message = generateMessage(missing_files, stored_data['run'])
 			print message
 			sendGmail(from_address, to_address, subject, message)
 		else:
